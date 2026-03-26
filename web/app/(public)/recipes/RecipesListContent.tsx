@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../lib/useAuth';
 import { fetchWithAuth } from '../../../lib/fetchWithAuth';
+import { useApiHealthRedirect } from '../../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
@@ -44,8 +45,8 @@ export function RecipesListContent() {
   const [diets, setDiets] = useState<Diet[]>([]);
   const [selectedDiet, setSelectedDiet] = useState('All');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, getAccessToken } = useAuth();
+  const { handleApiError } = useApiHealthRedirect();
 
   useEffect(() => {
     async function fetchData() {
@@ -71,6 +72,10 @@ export function RecipesListContent() {
 
         clearTimeout(timeout);
 
+        if (dietsResult.status === 'rejected' && recipesResult.status === 'rejected') {
+          throw dietsResult.reason;
+        }
+
         if (dietsResult.status === 'fulfilled') {
           setDiets(dietsResult.value);
         }
@@ -78,13 +83,14 @@ export function RecipesListContent() {
         if (recipesResult.status === 'fulfilled') {
           setRecipes(recipesResult.value);
         } else {
-          throw new Error('Failed to fetch recipes');
+          throw recipesResult.reason;
         }
 
         setLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-        setLoading(false);
+        if (!handleApiError(err)) {
+          setLoading(false);
+        }
       }
     }
 
@@ -120,15 +126,6 @@ export function RecipesListContent() {
     return (
       <div style={{ ...styles.container, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#9ca3af' }}>Loading...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ ...styles.container, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
-        <p style={{ color: '#ef4444' }}>Error: {error}</p>
-        <p style={{ color: '#9ca3af', fontSize: 14 }}>Make sure the food-api is running on {API_URL}</p>
       </div>
     );
   }

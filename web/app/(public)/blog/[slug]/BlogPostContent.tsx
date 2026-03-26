@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useApiHealthRedirect } from '../../../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
@@ -22,6 +23,7 @@ interface BlogPost {
 }
 
 export function BlogPostContent({ slug }: { slug: string }) {
+  const { handleApiError } = useApiHealthRedirect();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [related, setRelated] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,8 +40,15 @@ export function BlogPostContent({ slug }: { slug: string }) {
         ]);
         clearTimeout(timeout);
 
+        // If both requests failed with network errors, re-throw the original
+        if (postRes.status === 'rejected' && allRes.status === 'rejected') {
+          throw postRes.reason;
+        }
+
         if (postRes.status === 'fulfilled' && postRes.value.ok) {
           setPost(await postRes.value.json());
+        } else if (postRes.status === 'rejected') {
+          throw postRes.reason;
         } else {
           throw new Error('Not found');
         }
@@ -49,7 +58,8 @@ export function BlogPostContent({ slug }: { slug: string }) {
           const items: BlogPost[] = Array.isArray(data) ? data : data.items || [];
           setRelated(items.filter((p) => p.slug !== slug).slice(0, 3));
         }
-      } catch {
+      } catch (err) {
+        if (handleApiError(err)) return;
         const displayTitle = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         setPost({
           id: slug,

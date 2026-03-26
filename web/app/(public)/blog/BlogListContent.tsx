@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { useApiHealthRedirect } from '../../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 const PAGE_SIZE = 10;
@@ -23,6 +24,7 @@ interface BlogPost {
 const CATEGORIES = ['All', 'Nutrition', 'Recipes', 'Wellness', 'Fitness'];
 
 export function BlogListContent() {
+  const { handleApiError } = useApiHealthRedirect();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -51,8 +53,8 @@ export function BlogListContent() {
       const total: number = data.totalCount ?? items.length;
       setPosts((prev) => append ? [...prev, ...items] : items);
       setTotalCount(total);
-    } catch {
-      if (!append) setPosts([]);
+    } catch (err) {
+      if (!handleApiError(err) && !append) setPosts([]);
     } finally {
       if (append) setLoadingMore(false); else setLoading(false);
     }

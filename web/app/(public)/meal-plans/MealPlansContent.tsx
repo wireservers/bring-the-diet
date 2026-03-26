@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../lib/useAuth';
 import { fetchWithAuth } from '../../../lib/fetchWithAuth';
+import { useApiHealthRedirect } from '../../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
@@ -62,6 +63,7 @@ function toWeekKey(d: Date): string {
 
 export function MealPlansContent() {
   const { isAuthenticated, getAccessToken } = useAuth();
+  const { handleApiError } = useApiHealthRedirect();
   const [weekOffset, setWeekOffset] = useState(0);
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [recipes, setRecipes] = useState<Record<string, RecipeInfo>>({});
@@ -102,7 +104,7 @@ export function MealPlansContent() {
       } else {
         setRecipes({});
       }
-    } catch { /* ignore */ }
+    } catch (err) { handleApiError(err); }
     setLoading(false);
   }, [monday.getTime()]);
 

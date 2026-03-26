@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useApiHealthRedirect } from '../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
@@ -45,9 +46,9 @@ export function HomeContent() {
   const [diets, setDiets] = useState<Diet[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const dietSliderRef = useRef<HTMLDivElement>(null);
   const medicalSliderRef = useRef<HTMLDivElement>(null);
+  const { handleApiError } = useApiHealthRedirect();
 
   const lifestyleDiets = diets.filter(d => d.category === 'lifestyle');
   const medicalDiets = diets.filter(d => d.category === 'medical');
@@ -103,6 +104,12 @@ export function HomeContent() {
 
         clearTimeout(timeout);
 
+        // If both requests failed, re-throw the original error so the
+        // network-error redirect can detect it (TypeError / AbortError).
+        if (dietsResult.status === 'rejected' && recipesResult.status === 'rejected') {
+          throw dietsResult.reason;
+        }
+
         if (dietsResult.status === 'fulfilled') {
           setDiets(dietsResult.value);
         }
@@ -110,13 +117,14 @@ export function HomeContent() {
         if (recipesResult.status === 'fulfilled') {
           setRecipes(recipesResult.value);
         } else {
-          throw new Error('Failed to fetch recipes');
+          throw recipesResult.reason;
         }
 
         setLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-        setLoading(false);
+        if (!handleApiError(err)) {
+          setLoading(false);
+        }
       }
     }
 
@@ -127,15 +135,6 @@ export function HomeContent() {
     return (
       <div style={{ ...styles.container, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#9ca3af' }}>Loading...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ ...styles.container, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
-        <p style={{ color: '#ef4444' }}>Error: {error}</p>
-        <p style={{ color: '#9ca3af', fontSize: 14 }}>Make sure the food-api is running on {API_URL}</p>
       </div>
     );
   }
@@ -208,9 +207,9 @@ export function HomeContent() {
             grid-template-columns: repeat(2, 1fr);
           }
         }
-        @media (min-width: 1200px) {
+        @media (min-width: 900px) {
           .recipe-grid {
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
           }
         }
         .quick-access-grid {

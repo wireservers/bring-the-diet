@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useApiHealthRedirect } from '../../../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
@@ -410,6 +411,7 @@ const DIET_GUIDES: Record<string, DietGuide> = {
 };
 
 export function DietDetailContent({ slug }: { slug: string }) {
+  const { handleApiError } = useApiHealthRedirect();
   const [diet, setDiet] = useState<DietType | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -429,6 +431,10 @@ export function DietDetailContent({ slug }: { slug: string }) {
 
         clearTimeout(timeout);
 
+        if (dietRes.status === 'rejected' && recipesRes.status === 'rejected') {
+          throw dietRes.reason;
+        }
+
         if (dietRes.status === 'fulfilled' && dietRes.value.ok) {
           setDiet(await dietRes.value.json());
         } else {
@@ -441,7 +447,8 @@ export function DietDetailContent({ slug }: { slug: string }) {
           const all = Array.isArray(data) ? data : data.items || [];
           setRecipes(all.filter((r: Recipe) => r.dietSlug === slug || r.diet?.toLowerCase() === slug));
         }
-      } catch {
+      } catch (err) {
+        if (handleApiError(err)) return;
         const fallbackName = guide?.displayName || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         setDiet({ id: slug, name: fallbackName, slug, recipeCount: 0 });
       } finally {

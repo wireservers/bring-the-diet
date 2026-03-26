@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useApiHealthRedirect } from '../../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
@@ -30,6 +31,7 @@ const DEFAULT_DIETS: DietType[] = [
 ];
 
 export function DietsListContent() {
+  const { handleApiError } = useApiHealthRedirect();
   const [diets, setDiets] = useState<DietType[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,8 +46,8 @@ export function DietsListContent() {
         const data = await res.json();
         const items = Array.isArray(data) ? data : data.items || [];
         setDiets(items.length > 0 ? items : DEFAULT_DIETS);
-      } catch {
-        setDiets(DEFAULT_DIETS);
+      } catch (err) {
+        if (!handleApiError(err)) setDiets(DEFAULT_DIETS);
       } finally {
         setLoading(false);
       }

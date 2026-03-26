@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../lib/useAuth';
+import { useApiHealthRedirect } from '../../../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
@@ -34,6 +35,7 @@ interface Recipe {
 export function RecipeDetailContent({ id }: { id: string }) {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const { handleApiError } = useApiHealthRedirect();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,12 +77,10 @@ export function RecipeDetailContent({ id }: { id: string }) {
       } catch (err) {
         clearTimeout(timeoutId);
         if (cancelled) return;
-        if ((err as Error).name === 'AbortError') {
-          setError('Request timed out');
-        } else {
+        if (!handleApiError(err)) {
           setError(err instanceof Error ? err.message : 'Failed to load recipe');
+          setLoading(false);
         }
-        setLoading(false);
       }
     }
 
