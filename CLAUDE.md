@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A **pnpm monorepo** for a food/nutrition/diet platform called "Bring the Diet" (package scope: `@nutri/*`). Includes a Next.js web app, Expo mobile app, and shared packages. The API server (Express + MongoDB) is referenced but lives outside this repo.
+A **pnpm monorepo** for a food/nutrition/diet platform called "Bring the Diet" (package scope: `@bringthediet/*`). Includes a Next.js web app, Expo mobile app, and shared packages. The API server (Express + MongoDB) is referenced but lives outside this repo.
 
 ## Commands
 
@@ -28,8 +28,8 @@ pnpm -C web typecheck       # Typecheck web only
 
 - **`web/`** — Next.js 15 (App Router), React 19, port 3001, standalone output for Azure deployment
 - **`mobile/`** — Expo 52, React Native 0.76, expo-router with tab navigation
-- **`packages/shared/`** (`@nutri/shared`) — TypeScript types (`ApiUser`, `UserRole`, `ID`), constants (`DIET_TYPES`), Zod validation schemas
-- **`packages/ui/`** (`@nutri/ui`) — Minimal React primitives (`Shell`, `Pill`)
+- **`packages/shared/`** (`@bringthediet/shared`) — TypeScript types (`ApiUser`, `UserRole`, `ID`), constants (`DIET_TYPES`), Zod validation schemas
+- **`packages/ui/`** (`@bringthediet/ui`) — Minimal React primitives (`Shell`, `Pill`)
 
 ### Web App Routing (`web/app/`)
 
