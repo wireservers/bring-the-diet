@@ -30,7 +30,60 @@ export function BlogListContent() {
   const [activeCategory, setActiveCategory] = useState('All');
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const hasMore = false;
+  const hasMore = posts.length < totalCount;
+
+  const fetchPosts = useCallback(async (pageNum: number, category: string, append: boolean) => {
+    if (append) setLoadingMore(true); else setLoading(true);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const catParam = category !== 'All' ? `&category=${encodeURIComponent(category)}` : '';
+      const res = await fetch(
+        `${API_URL}/api/blogposts?page=${pageNum}&pageSize=${PAGE_SIZE}${catParam}`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
+      const data = await res.json();
+      const items: BlogPost[] = Array.isArray(data) ? data : data.items || [];
+      const total: number = data.totalCount ?? items.length;
+      setPosts((prev) => append ? [...prev, ...items] : items);
+      setTotalCount(total);
+    } catch (err) {
+      if (!handleApiError(err) && !append) setPosts([]);
+    } finally {
+      if (append) setLoadingMore(false); else setLoading(false);
+    }
+  }, []);
+
+  // Initial load + reset when category changes
+  useEffect(() => {
+    setPage(1);
+    fetchPosts(1, activeCategory, false);
+  }, [activeCategory, fetchPosts]);
+
+  // Intersection observer for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          setPage((p) => p + 1);
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore]);
+
+  // Load next page when page increments beyond 1
+  useEffect(() => {
+    if (page > 1) {
+      fetchPosts(page, activeCategory, true);
+    }
+  }, [page, activeCategory, fetchPosts]);
 
   // Client-side search filter on loaded posts
   const filtered = search.trim()

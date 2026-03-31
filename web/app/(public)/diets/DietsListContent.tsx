@@ -29,8 +29,29 @@ const DEFAULT_DIETS: DietType[] = [
 ];
 
 export function DietsListContent() {
-  const [diets] = useState<DietType[]>(mockDietData as DietType[]);
-  const loading = false;
+  const { handleApiError } = useApiHealthRedirect();
+  const [diets, setDiets] = useState<DietType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchDiets() {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(`${API_URL}/api/diets`, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
+        const data = await res.json();
+        const items = Array.isArray(data) ? data : data.items || [];
+        setDiets(items.length > 0 ? items : DEFAULT_DIETS);
+      } catch (err) {
+        if (!handleApiError(err)) setDiets(DEFAULT_DIETS);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDiets();
+  }, []);
 
   return (
     <div style={styles.container}>
