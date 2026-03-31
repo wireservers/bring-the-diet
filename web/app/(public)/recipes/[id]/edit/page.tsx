@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useApiHealthRedirect } from '../../../../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
@@ -16,6 +17,7 @@ interface IngredientForm {
 export default function EditRecipePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { handleApiError } = useApiHealthRedirect();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -38,6 +40,9 @@ export default function EditRecipePage() {
       try {
         const res = await fetch(`${API_URL}/api/recipes/${id}`);
         if (!res.ok) {
+          if (res.status >= 502 && res.status <= 504) {
+            throw new Error(`Service unavailable (${res.status})`);
+          }
           setError(res.status === 404 ? 'Recipe not found' : 'Failed to load recipe');
           setLoading(false);
           return;
@@ -61,10 +66,12 @@ export default function EditRecipePage() {
         );
         setInstructions(data.instructions || []);
         setLoading(false);
-      } catch {
+      } catch (err) {
         if (!cancelled) {
-          setError('Failed to load recipe');
-          setLoading(false);
+          if (!handleApiError(err)) {
+            setError('Failed to load recipe');
+            setLoading(false);
+          }
         }
       }
     }
@@ -118,8 +125,10 @@ export default function EditRecipePage() {
         const data = await res.json().catch(() => null);
         setError(data?.message || `Failed to save (${res.status})`);
       }
-    } catch {
-      setError('Failed to save recipe');
+    } catch (err) {
+      if (!handleApiError(err)) {
+        setError('Failed to save recipe');
+      }
     } finally {
       setSaving(false);
     }

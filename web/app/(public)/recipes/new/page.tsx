@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useApiHealthRedirect } from '../../../../lib/useApiHealthRedirect';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
@@ -23,6 +24,7 @@ interface Ingredient {
 
 export default function NewRecipePage() {
   const router = useRouter();
+  const { handleApiError } = useApiHealthRedirect();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
@@ -98,8 +100,8 @@ export default function NewRecipePage() {
       if (res.ok) {
         router.push('/recipes');
       }
-    } catch {
-      // silent
+    } catch (err) {
+      handleApiError(err);
     } finally {
       setSaving(false);
     }
