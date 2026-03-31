@@ -47,7 +47,7 @@ export function BlogListContent() {
         { signal: controller.signal }
       );
       clearTimeout(timeout);
-      if (!res.ok) throw new Error('Failed to fetch');
+      if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
       const data = await res.json();
       const items: BlogPost[] = Array.isArray(data) ? data : data.items || [];
       const total: number = data.totalCount ?? items.length;

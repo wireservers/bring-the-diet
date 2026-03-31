@@ -42,7 +42,7 @@ export function DietsListContent() {
         const timeout = setTimeout(() => controller.abort(), 5000);
         const res = await fetch(`${API_URL}/api/diets`, { signal: controller.signal });
         clearTimeout(timeout);
-        if (!res.ok) throw new Error('Failed to fetch');
+        if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
         const data = await res.json();
         const items = Array.isArray(data) ? data : data.items || [];
         setDiets(items.length > 0 ? items : DEFAULT_DIETS);
