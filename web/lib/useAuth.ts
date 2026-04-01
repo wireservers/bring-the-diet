@@ -1,66 +1,38 @@
 'use client';
 
-import { useMsal, useIsAuthenticated } from '@azure/msal-react';
-import { InteractionRequiredAuthError, InteractionStatus } from '@azure/msal-browser';
-import { loginRequest } from './msalConfig';
+import { useCallback } from 'react';
 
-export function useAuth() {
-  const { instance, accounts, inProgress } = useMsal();
-  const isAuthenticated = useIsAuthenticated();
+/**
+ * Mock auth hook — returns a stub "dev user" so the app runs without MSAL / Azure AD.
+ * Replace with the real MSAL-based hook when auth is wired up.
+ */
+interface AuthUser {
+  name: string;
+  email: string;
+}
 
-  const account = accounts[0] ?? null;
+export function useAuth(): {
+  isAuthenticated: boolean;
+  user: AuthUser | null;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
+  getAccessToken: () => Promise<string | null>;
+} {
+  const login = useCallback(async () => {
+    console.log('[mock] login called — no-op');
+  }, []);
 
-  const login = async () => {
-    if (inProgress !== InteractionStatus.None) return;
-    try {
-      await instance.loginRedirect(loginRequest);
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
-  };
+  const logout = useCallback(async () => {
+    console.log('[mock] logout called — no-op');
+  }, []);
 
-  const logout = async () => {
-    try {
-      await instance.logoutRedirect({
-        postLogoutRedirectUri: window.location.origin,
-      });
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
-  const getAccessToken = async (): Promise<string | null> => {
-    if (!account) return null;
-
-    try {
-      const response = await instance.acquireTokenSilent({
-        ...loginRequest,
-        account,
-      });
-      return response.accessToken;
-    } catch (error) {
-      if (error instanceof InteractionRequiredAuthError) {
-        try {
-          await instance.acquireTokenRedirect(loginRequest);
-          return null;
-        } catch (redirectError) {
-          console.error('Token acquisition failed:', redirectError);
-          return null;
-        }
-      }
-      console.error('Token acquisition failed:', error);
-      return null;
-    }
-  };
+  const getAccessToken = useCallback(async (): Promise<string | null> => {
+    return 'mock-dev-token';
+  }, []);
 
   return {
-    isAuthenticated,
-    user: account
-      ? {
-          name: account.name ?? account.username,
-          email: account.username,
-        }
-      : null,
+    isAuthenticated: false,
+    user: null,
     login,
     logout,
     getAccessToken,

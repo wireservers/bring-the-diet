@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useApiHealthRedirect } from '../../../../../lib/useApiHealthRedirect';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
+import { recipes as mockRecipes } from '../../../../data/mock';
 
 interface IngredientForm {
   name: string;
@@ -17,7 +15,6 @@ interface IngredientForm {
 export default function EditRecipePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { handleApiError } = useApiHealthRedirect();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,50 +31,28 @@ export default function EditRecipePage() {
 
   useEffect(() => {
     if (!id) return;
-    let cancelled = false;
-
-    async function fetchRecipe() {
-      try {
-        const res = await fetch(`${API_URL}/api/recipes/${id}`);
-        if (!res.ok) {
-          if (res.status >= 502 && res.status <= 504) {
-            throw new Error(`Service unavailable (${res.status})`);
-          }
-          setError(res.status === 404 ? 'Recipe not found' : 'Failed to load recipe');
-          setLoading(false);
-          return;
-        }
-        const data = await res.json();
-        if (cancelled) return;
-
-        setTitle(data.title || '');
-        setDescription(data.description || '');
-        setImage(data.image || '');
-        setDiet(data.diet || '');
-        setPrepTime(data.prepTime != null ? String(data.prepTime) : '');
-        setCalories(data.calories != null ? String(data.calories) : '');
-        setIngredients(
-          (data.ingredients || []).map((i: { name: string; quantity?: number; unit?: string; notes?: string }) => ({
-            name: i.name || '',
-            quantity: i.quantity != null ? String(i.quantity) : '',
-            unit: i.unit || '',
-            notes: i.notes || '',
-          }))
-        );
-        setInstructions(data.instructions || []);
-        setLoading(false);
-      } catch (err) {
-        if (!cancelled) {
-          if (!handleApiError(err)) {
-            setError('Failed to load recipe');
-            setLoading(false);
-          }
-        }
-      }
+    const data = mockRecipes.find(r => r.id === id);
+    if (!data) {
+      setError('Recipe not found');
+      setLoading(false);
+      return;
     }
-
-    fetchRecipe();
-    return () => { cancelled = true; };
+    setTitle(data.title || '');
+    setDescription(data.description || '');
+    setImage(data.image || '');
+    setDiet(data.diet || '');
+    setPrepTime(data.prepTime != null ? String(data.prepTime) : '');
+    setCalories(data.calories != null ? String(data.calories) : '');
+    setIngredients(
+      (data.ingredients || []).map((i) => ({
+        name: i.name || '',
+        quantity: i.quantity != null ? String(i.quantity) : '',
+        unit: i.unit || '',
+        notes: i.notes || '',
+      }))
+    );
+    setInstructions(data.instructions || []);
+    setLoading(false);
   }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,22 +88,11 @@ export default function EditRecipePage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/recipes/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (res.ok || res.status === 204) {
-        router.push(`/recipes/${id}`);
-      } else {
-        const data = await res.json().catch(() => null);
-        setError(data?.message || `Failed to save (${res.status})`);
-      }
-    } catch (err) {
-      if (!handleApiError(err)) {
-        setError('Failed to save recipe');
-      }
+      // Mock save — just redirect back
+      console.log('[mock] saving recipe', id, body);
+      router.push(`/recipes/${id}`);
+    } catch {
+      setError('Failed to save recipe');
     } finally {
       setSaving(false);
     }

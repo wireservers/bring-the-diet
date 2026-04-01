@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useApiHealthRedirect } from '../../../../lib/useApiHealthRedirect';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
+import { blogPosts as mockBlogPosts } from '../../../data/mock';
 
 interface BlogPost {
   id: string;
@@ -23,80 +21,52 @@ interface BlogPost {
 }
 
 export function BlogPostContent({ slug }: { slug: string }) {
-  const { handleApiError } = useApiHealthRedirect();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [related, setRelated] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-
-        const [postRes, allRes] = await Promise.allSettled([
-          fetch(`${API_URL}/api/blogposts/slug/${slug}`, { signal: controller.signal }),
-          fetch(`${API_URL}/api/blogposts?pageSize=10`, { signal: controller.signal }),
-        ]);
-        clearTimeout(timeout);
-
-        // If both requests failed with network errors, re-throw the original
-        if (postRes.status === 'rejected' && allRes.status === 'rejected') {
-          throw postRes.reason;
-        }
-
-        if (postRes.status === 'fulfilled' && postRes.value.ok) {
-          setPost(await postRes.value.json());
-        } else if (postRes.status === 'rejected') {
-          throw postRes.reason;
-        } else {
-          throw new Error('Not found');
-        }
-
-        if (allRes.status === 'fulfilled' && allRes.value.ok) {
-          const data = await allRes.value.json();
-          const items: BlogPost[] = Array.isArray(data) ? data : data.items || [];
-          setRelated(items.filter((p) => p.slug !== slug).slice(0, 3));
-        }
-      } catch (err) {
-        if (handleApiError(err)) return;
-        const displayTitle = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        setPost({
-          id: slug,
-          title: displayTitle,
-          slug,
-          excerpt: `Discover the secrets to ${displayTitle.toLowerCase()} and achieving your wellness goals.`,
-          category: 'Nutrition',
-          author: 'BringTheDiet Team',
-          readTime: 5,
-          tags: ['nutrition', 'wellness', 'healthy-eating', 'meal-prep'],
-          published: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          content: [
-            '## Introduction',
-            '',
-            `Healthy eating is the foundation of a vibrant, energetic life. In this comprehensive guide, we'll explore the key principles of ${displayTitle.toLowerCase()} and how you can apply them to your daily routine.`,
-            '',
-            '## Getting Started',
-            '',
-            'The journey to better nutrition begins with understanding what your body needs. Focus on whole, unprocessed foods and aim for a colorful plate at every meal.',
-            '',
-            '## Key Takeaways',
-            '',
-            'Remember that small, consistent changes are more sustainable than drastic overhauls. Start with one meal at a time and build from there.',
-          ].join('\n'),
-        });
-        setRelated([
-          { id: 'r1', title: '10 Superfoods for Better Health', slug: 'superfoods-health', category: 'Nutrition', author: '', readTime: 5, published: true, createdAt: '', updatedAt: '' },
-          { id: 'r2', title: 'Meal Prep Made Easy', slug: 'meal-prep-easy', category: 'Recipes', author: '', readTime: 6, published: true, createdAt: '', updatedAt: '' },
-          { id: 'r3', title: 'Understanding Food Labels', slug: 'food-labels', category: 'Tips', author: '', readTime: 4, published: true, createdAt: '', updatedAt: '' },
-        ]);
-      } finally {
-        setLoading(false);
-      }
+    const found = mockBlogPosts.find(p => p.slug === slug);
+    if (found) {
+      setPost(found as BlogPost);
+      setRelated(
+        (mockBlogPosts as BlogPost[]).filter(p => p.slug !== slug).slice(0, 3)
+      );
+    } else {
+      const displayTitle = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      setPost({
+        id: slug,
+        title: displayTitle,
+        slug,
+        excerpt: `Discover the secrets to ${displayTitle.toLowerCase()} and achieving your wellness goals.`,
+        category: 'Nutrition',
+        author: 'BringTheDiet Team',
+        readTime: 5,
+        tags: ['nutrition', 'wellness', 'healthy-eating', 'meal-prep'],
+        published: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        content: [
+          '## Introduction',
+          '',
+          `Healthy eating is the foundation of a vibrant, energetic life. In this comprehensive guide, we'll explore the key principles of ${displayTitle.toLowerCase()} and how you can apply them to your daily routine.`,
+          '',
+          '## Getting Started',
+          '',
+          'The journey to better nutrition begins with understanding what your body needs. Focus on whole, unprocessed foods and aim for a colorful plate at every meal.',
+          '',
+          '## Key Takeaways',
+          '',
+          'Remember that small, consistent changes are more sustainable than drastic overhauls. Start with one meal at a time and build from there.',
+        ].join('\n'),
+      });
+      setRelated([
+        { id: 'r1', title: '10 Superfoods for Better Health', slug: 'superfoods-health', category: 'Nutrition', author: '', readTime: 5, published: true, createdAt: '', updatedAt: '' },
+        { id: 'r2', title: 'Meal Prep Made Easy', slug: 'meal-prep-easy', category: 'Recipes', author: '', readTime: 6, published: true, createdAt: '', updatedAt: '' },
+        { id: 'r3', title: 'Understanding Food Labels', slug: 'food-labels', category: 'Tips', author: '', readTime: 4, published: true, createdAt: '', updatedAt: '' },
+      ]);
     }
-    fetchData();
+    setLoading(false);
   }, [slug]);
 
   if (loading) {

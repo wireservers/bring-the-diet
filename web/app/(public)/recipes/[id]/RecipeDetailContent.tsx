@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../lib/useAuth';
-import { useApiHealthRedirect } from '../../../../lib/useApiHealthRedirect';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
+import { recipes as mockRecipes } from '../../../data/mock';
 
 interface RecipeIngredient {
   name: string;
@@ -35,7 +33,6 @@ interface Recipe {
 export function RecipeDetailContent({ id }: { id: string }) {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const { handleApiError } = useApiHealthRedirect();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,73 +40,20 @@ export function RecipeDetailContent({ id }: { id: string }) {
 
   useEffect(() => {
     if (!id) return;
-
-    let cancelled = false;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    async function fetchRecipe() {
-      try {
-        const res = await fetch(`${API_URL}/api/recipes/${id}`, {
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-
-        if (cancelled) return;
-
-        if (!res.ok) {
-          if (res.status === 404) {
-            setError('Recipe not found');
-          } else {
-            const body = await res.json().catch(() => null);
-            throw new Error(body?.message || `Failed to fetch recipe (${res.status})`);
-          }
-          setLoading(false);
-          return;
-        }
-
-        const data = await res.json();
-        if (!cancelled) {
-          setError(null);
-          setRecipe(data);
-          setLoading(false);
-        }
-      } catch (err) {
-        clearTimeout(timeoutId);
-        if (cancelled) return;
-        if (!handleApiError(err)) {
-          setError(err instanceof Error ? err.message : 'Failed to load recipe');
-          setLoading(false);
-        }
-      }
+    const found = mockRecipes.find(r => r.id === id);
+    if (found) {
+      setRecipe(found as unknown as Recipe);
+      setError(null);
+    } else {
+      setError('Recipe not found');
     }
-
-    setLoading(true);
-    setError(null);
-    fetchRecipe();
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timeoutId);
-      controller.abort();
-    };
+    setLoading(false);
   }, [id]);
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this recipe?')) return;
     setDeleting(true);
-    try {
-      const res = await fetch(`${API_URL}/api/recipes/${id}`, { method: 'DELETE' });
-      if (res.ok || res.status === 204) {
-        router.push('/recipes');
-      } else {
-        alert('Failed to delete recipe');
-      }
-    } catch {
-      alert('Failed to delete recipe');
-    } finally {
-      setDeleting(false);
-    }
+    router.push('/recipes');
   };
 
   const handleShare = async () => {

@@ -3,9 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useApiHealthRedirect } from '../../../../lib/useApiHealthRedirect';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
 const DIET_TAGS = [
   'Vegetarian',
@@ -24,7 +21,6 @@ interface Ingredient {
 
 export default function NewRecipePage() {
   const router = useRouter();
-  const { handleApiError } = useApiHealthRedirect();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
@@ -92,16 +88,11 @@ export default function NewRecipePage() {
           .map((ing) => ({ name: ing.name.trim() })),
         instructions: instructions.filter((inst) => inst.trim()),
       };
-      const res = await fetch(`${API_URL}/api/recipes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        router.push('/recipes');
-      }
-    } catch (err) {
-      handleApiError(err);
+      // Mock save — just redirect back
+      console.log('[mock] creating recipe', body);
+      router.push('/recipes');
+    } catch {
+      // silent
     } finally {
       setSaving(false);
     }

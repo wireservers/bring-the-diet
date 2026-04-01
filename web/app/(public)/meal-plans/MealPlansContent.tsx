@@ -1,11 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from '../../../lib/useAuth';
-import { fetchWithAuth } from '../../../lib/fetchWithAuth';
-import { useApiHealthRedirect } from '../../../lib/useApiHealthRedirect';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -62,71 +58,22 @@ function toWeekKey(d: Date): string {
 }
 
 export function MealPlansContent() {
-  const { isAuthenticated, getAccessToken } = useAuth();
-  const { handleApiError } = useApiHealthRedirect();
+  const { isAuthenticated } = useAuth();
   const [weekOffset, setWeekOffset] = useState(0);
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
-  const [recipes, setRecipes] = useState<Record<string, RecipeInfo>>({});
-  const [loading, setLoading] = useState(true);
+  const [recipes] = useState<Record<string, RecipeInfo>>({});
+  const loading = false;
 
   const monday = getMonday(weekOffset);
   const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
   const weekLabel = weekOffset === 0 ? 'This Week' : weekOffset === -1 ? 'Last Week' : weekOffset === 1 ? 'Next Week' : `Week of ${formatDateShort(monday)}`;
   const dateRange = `${formatDateShort(monday)} - ${formatDateShort(sunday)}, ${sunday.getFullYear()}`;
 
-  const fetchMealPlan = useCallback(async () => {
-    setLoading(true);
-    try {
-      const weekKey = toWeekKey(monday);
-      const res = await fetch(`${API_URL}/api/mealplans?page=1&pageSize=100`);
-      if (!res.ok) { setLoading(false); return; }
-      const data = await res.json();
-      const plans: MealPlan[] = data.items || [];
-
-      const match = plans.find(p => p.weekStart === weekKey);
-      setMealPlan(match || null);
-
-      if (match?.entries) {
-        const recipeIds = [...new Set(match.entries.map(e => e.recipeId).filter(Boolean))] as string[];
-        const fetched: Record<string, RecipeInfo> = {};
-        await Promise.all(
-          recipeIds.map(async (rid) => {
-            try {
-              const r = await fetch(`${API_URL}/api/recipes/${rid}`);
-              if (r.ok) {
-                const recipe = await r.json();
-                fetched[rid] = { id: recipe.id, title: recipe.title, calories: recipe.calories };
-              }
-            } catch { /* skip */ }
-          })
-        );
-        setRecipes(fetched);
-      } else {
-        setRecipes({});
-      }
-    } catch (err) { handleApiError(err); }
-    setLoading(false);
-  }, [monday.getTime()]);
-
-  useEffect(() => { fetchMealPlan(); }, [fetchMealPlan]);
-
-  const handleDeleteEntry = async (entryIndex: number) => {
+  const handleDeleteEntry = useCallback(async (entryIndex: number) => {
     if (!mealPlan) return;
     const updated = (mealPlan.entries || []).filter((_, i) => i !== entryIndex);
-    try {
-      const res = await fetchWithAuth(
-        `/api/mealplans/${mealPlan.id}`,
-        getAccessToken,
-        {
-          method: 'PUT',
-          body: JSON.stringify({ entries: updated }),
-        }
-      );
-      if (res.ok || res.status === 204) {
-        setMealPlan({ ...mealPlan, entries: updated });
-      }
-    } catch { /* ignore */ }
-  };
+    setMealPlan({ ...mealPlan, entries: updated });
+  }, [mealPlan]);
 
   const entries = mealPlan?.entries || [];
   const totalMeals = entries.length;
