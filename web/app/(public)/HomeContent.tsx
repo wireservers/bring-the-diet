@@ -79,54 +79,6 @@ export function HomeContent() {
     }
   };
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch diets and recipes independently so one failure doesn't block the other
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-
-        const [dietsResult, recipesResult] = await Promise.allSettled([
-          fetch(`${API_URL}/api/diets`, { signal: controller.signal }).then(async (res) => {
-            if (!res.ok) return [];
-            const data = await res.json();
-            return Array.isArray(data) ? data : data.items || [];
-          }),
-          fetch(`${API_URL}/api/recipes`, { signal: controller.signal }).then(async (res) => {
-            if (!res.ok) throw new Error(`Failed to fetch recipes (${res.status})`);
-            const data = await res.json();
-            return data.items || [];
-          }),
-        ]);
-
-        clearTimeout(timeout);
-
-        // If both requests failed, re-throw the original error so the
-        // network-error redirect can detect it (TypeError / AbortError).
-        if (dietsResult.status === 'rejected' && recipesResult.status === 'rejected') {
-          throw dietsResult.reason;
-        }
-
-        if (dietsResult.status === 'fulfilled') {
-          setDiets(dietsResult.value);
-        }
-
-        if (recipesResult.status === 'fulfilled') {
-          setRecipes(recipesResult.value);
-        } else {
-          throw recipesResult.reason;
-        }
-
-        setLoading(false);
-      } catch (err) {
-        if (!handleApiError(err)) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchData();
-  }, []);
 
   if (loading) {
     return (
