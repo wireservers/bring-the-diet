@@ -4,8 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
-
 const DIET_TAGS = [
   'Vegetarian',
   'Vegan',
@@ -90,14 +88,9 @@ export default function NewRecipePage() {
           .map((ing) => ({ name: ing.name.trim() })),
         instructions: instructions.filter((inst) => inst.trim()),
       };
-      const res = await fetch(`${API_URL}/api/recipes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        router.push('/recipes');
-      }
+      // Mock save — just redirect back
+      console.log('[mock] creating recipe', body);
+      router.push('/recipes');
     } catch {
       // silent
     } finally {

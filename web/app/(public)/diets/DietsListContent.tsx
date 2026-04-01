@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useApiHealthRedirect } from '../../../lib/useApiHealthRedirect';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
+import { diets as mockDietData } from '../../data/mock';
 
 interface DietType {
   id: string;
@@ -31,29 +29,8 @@ const DEFAULT_DIETS: DietType[] = [
 ];
 
 export function DietsListContent() {
-  const { handleApiError } = useApiHealthRedirect();
-  const [diets, setDiets] = useState<DietType[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchDiets() {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-        const res = await fetch(`${API_URL}/api/diets`, { signal: controller.signal });
-        clearTimeout(timeout);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-        const items = Array.isArray(data) ? data : data.items || [];
-        setDiets(items.length > 0 ? items : DEFAULT_DIETS);
-      } catch (err) {
-        if (!handleApiError(err)) setDiets(DEFAULT_DIETS);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchDiets();
-  }, []);
+  const [diets] = useState<DietType[]>(mockDietData as DietType[]);
+  const loading = false;
 
   return (
     <div style={styles.container}>

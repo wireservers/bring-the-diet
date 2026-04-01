@@ -1,12 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../lib/useAuth';
-import { fetchWithAuth } from '../../../lib/fetchWithAuth';
-import { useApiHealthRedirect } from '../../../lib/useApiHealthRedirect';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
+import { diets as mockDiets, recipes as mockRecipes } from '../../data/mock';
 
 interface Diet {
   _id: string;
@@ -41,61 +38,11 @@ interface Recipe {
 
 export function RecipesListContent() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [diets, setDiets] = useState<Diet[]>([]);
+  const [recipes, setRecipes] = useState<Recipe[]>(mockRecipes as unknown as Recipe[]);
+  const [diets] = useState<Diet[]>(mockDiets as unknown as Diet[]);
   const [selectedDiet, setSelectedDiet] = useState('All');
-  const [loading, setLoading] = useState(true);
-  const { isAuthenticated, getAccessToken } = useAuth();
-  const { handleApiError } = useApiHealthRedirect();
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-
-        const [dietsResult, recipesResult] = await Promise.allSettled([
-          fetch(`${API_URL}/api/diets`, { signal: controller.signal }).then(async (res) => {
-            if (!res.ok) return [];
-            const data = await res.json();
-            return Array.isArray(data) ? data : data.items || [];
-          }),
-          fetch(`${API_URL}/api/recipes`, { signal: controller.signal }).then(async (res) => {
-            if (!res.ok) {
-              const body = await res.json().catch(() => null);
-              throw new Error(body?.message || `Failed to fetch recipes (${res.status})`);
-            }
-            const data = await res.json();
-            return data.items || [];
-          }),
-        ]);
-
-        clearTimeout(timeout);
-
-        if (dietsResult.status === 'rejected' && recipesResult.status === 'rejected') {
-          throw dietsResult.reason;
-        }
-
-        if (dietsResult.status === 'fulfilled') {
-          setDiets(dietsResult.value);
-        }
-
-        if (recipesResult.status === 'fulfilled') {
-          setRecipes(recipesResult.value);
-        } else {
-          throw recipesResult.reason;
-        }
-
-        setLoading(false);
-      } catch (err) {
-        if (!handleApiError(err)) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchData();
-  }, []);
+  const loading = false;
+  const { isAuthenticated } = useAuth();
 
   const handleDelete = async (id: string, title: string) => {
     if (!isAuthenticated) {
@@ -103,14 +50,7 @@ export function RecipesListContent() {
       return;
     }
     if (!confirm(`Delete "${title}"?`)) return;
-    try {
-      const res = await fetchWithAuth(`/api/recipes/${id}`, getAccessToken, { method: 'DELETE' });
-      if (res.ok) {
-        setRecipes(prev => prev.filter(r => r.id !== id));
-      }
-    } catch {
-      alert('Failed to delete recipe. Are you signed in?');
-    }
+    setRecipes(prev => prev.filter(r => r.id !== id));
   };
 
   const filteredRecipes = recipes.filter((recipe) => {

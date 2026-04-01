@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useApiHealthRedirect } from '../../../../lib/useApiHealthRedirect';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
+import { diets as mockDiets, recipes as mockRecipes } from '../../../data/mock';
 
 interface DietType {
   id: string;
@@ -411,7 +409,6 @@ const DIET_GUIDES: Record<string, DietGuide> = {
 };
 
 export function DietDetailContent({ slug }: { slug: string }) {
-  const { handleApiError } = useApiHealthRedirect();
   const [diet, setDiet] = useState<DietType | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -419,43 +416,15 @@ export function DietDetailContent({ slug }: { slug: string }) {
   const guide = DIET_GUIDES[slug];
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-
-        const [dietRes, recipesRes] = await Promise.allSettled([
-          fetch(`${API_URL}/api/diets/${slug}`, { signal: controller.signal }),
-          fetch(`${API_URL}/api/recipes?pageSize=100`, { signal: controller.signal }),
-        ]);
-
-        clearTimeout(timeout);
-
-        if (dietRes.status === 'rejected' && recipesRes.status === 'rejected') {
-          throw dietRes.reason;
-        }
-
-        if (dietRes.status === 'fulfilled' && dietRes.value.ok) {
-          setDiet(await dietRes.value.json());
-        } else {
-          const fallbackName = guide?.displayName || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-          setDiet({ id: slug, name: fallbackName, slug, recipeCount: 0 });
-        }
-
-        if (recipesRes.status === 'fulfilled' && recipesRes.value.ok) {
-          const data = await recipesRes.value.json();
-          const all = Array.isArray(data) ? data : data.items || [];
-          setRecipes(all.filter((r: Recipe) => r.dietSlug === slug || r.diet?.toLowerCase() === slug));
-        }
-      } catch (err) {
-        if (handleApiError(err)) return;
-        const fallbackName = guide?.displayName || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        setDiet({ id: slug, name: fallbackName, slug, recipeCount: 0 });
-      } finally {
-        setLoading(false);
-      }
+    const found = mockDiets.find(d => d.slug === slug);
+    if (found) {
+      setDiet(found as DietType);
+    } else {
+      const fallbackName = guide?.displayName || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      setDiet({ id: slug, name: fallbackName, slug, recipeCount: 0 });
     }
-    fetchData();
+    setRecipes(mockRecipes.filter(r => r.dietSlug === slug || r.diet?.toLowerCase() === slug) as Recipe[]);
+    setLoading(false);
   }, [slug, guide]);
 
   if (loading) {

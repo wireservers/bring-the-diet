@@ -15,7 +15,7 @@ export function useApiHealthRedirect() {
 
   const handleApiError = useCallback((err: unknown) => {
     if (redirected.current) return true;
-    if (isNetworkError(err)) {
+    if (isNetworkError(err) || isServiceUnavailable(err)) {
       redirected.current = true;
       window.location.replace('/service-unavailable');
       return true;
@@ -24,6 +24,14 @@ export function useApiHealthRedirect() {
   }, []);
 
   return { handleApiError };
+}
+
+function isServiceUnavailable(err: unknown): boolean {
+  if (err instanceof Error) {
+    const msg = err.message;
+    return /\b(502|503|504)\b/.test(msg);
+  }
+  return false;
 }
 
 function isNetworkError(err: unknown): boolean {

@@ -4,7 +4,6 @@ import { JsonLd } from '../../../../components/JsonLd';
 import {
   SITE_NAME,
   SITE_URL,
-  API_URL,
   DEFAULT_OG_IMAGE,
   absoluteUrl,
 } from '../../../../lib/seo';
@@ -22,15 +21,9 @@ interface Recipe {
 }
 
 async function getRecipe(id: string): Promise<Recipe | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/recipes/${id}`, {
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
+  const { recipes } = await import('../../../data/mock');
+  const found = recipes.find(r => r.id === id);
+  return found ?? null;
 }
 
 interface PageProps {
