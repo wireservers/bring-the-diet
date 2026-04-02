@@ -35,11 +35,17 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Prepare standalone deployment
+        run: |
+          cp -rL web/.next/standalone ./deploy
+          cp -rL web/.next/static ./deploy/web/.next/static
+          [ -d web/public ] && cp -rL web/public ./deploy/web/public || true
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v7
         with:
           name: node-app
-          path: .
+          path: ./deploy
 
   deploy:
     runs-on: ubuntu-latest
