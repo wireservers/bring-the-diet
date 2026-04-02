@@ -38,18 +38,8 @@ jobs:
       - name: Prepare standalone deployment
         run: |
           cp -rL web/.next/standalone ./deploy
-          echo "--- standalone root ---"
-          ls ./deploy
-          echo "--- server.js location ---"
-          find ./deploy -name "server.js"
-          # Copy static assets next to wherever server.js lives
-          if [ -f ./deploy/web/server.js ]; then
-            cp -rL web/.next/static ./deploy/web/.next/static
-            [ -d web/public ] && cp -rL web/public ./deploy/web/public || true
-          else
-            cp -rL web/.next/static ./deploy/.next/static
-            [ -d web/public ] && cp -rL web/public ./deploy/public || true
-          fi
+          cp -rL web/.next/static ./deploy/web/.next/static
+          [ -d web/public ] && cp -rL web/public ./deploy/web/public || true
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v7
@@ -84,5 +74,5 @@ jobs:
           app-name: 'bring-the-diet-dev'
           slot-name: 'Production'
           package: .
-          startup-command: 'node server.js'
+          startup-command: 'node web/server.js'
           
