@@ -5,18 +5,14 @@
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
-    "start": "next start -p 3001",
+    "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@bringthediet/shared": "workspace:*",
-    "@bringthediet/ui": "workspace:*",
-    "@reduxjs/toolkit": "^2.11.2",
     "next": "^15.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-redux": "^9.2.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.12.0",
