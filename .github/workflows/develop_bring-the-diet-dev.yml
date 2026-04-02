@@ -35,9 +35,6 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Debug standalone structure
-        run: find web/.next/standalone -maxdepth 3 | sort
-
       - name: Prepare standalone deployment
         run: |
           cp -rL web/.next/standalone ./deploy
