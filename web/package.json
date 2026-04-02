@@ -10,6 +10,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.1.0",
+    "@azure/msal-react": "^5.0.3",
     "@bringthediet/shared": "workspace:*",
     "@bringthediet/ui": "workspace:*",
     "@reduxjs/toolkit": "^2.11.2",
