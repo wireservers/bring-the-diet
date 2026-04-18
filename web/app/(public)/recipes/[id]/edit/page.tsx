@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
+import { recipes as mockRecipes } from '../../../../data/mock';
 
 interface IngredientForm {
   name: string;
@@ -32,45 +31,28 @@ export default function EditRecipePage() {
 
   useEffect(() => {
     if (!id) return;
-    let cancelled = false;
-
-    async function fetchRecipe() {
-      try {
-        const res = await fetch(`${API_URL}/api/recipes/${id}`);
-        if (!res.ok) {
-          setError(res.status === 404 ? 'Recipe not found' : 'Failed to load recipe');
-          setLoading(false);
-          return;
-        }
-        const data = await res.json();
-        if (cancelled) return;
-
-        setTitle(data.title || '');
-        setDescription(data.description || '');
-        setImage(data.image || '');
-        setDiet(data.diet || '');
-        setPrepTime(data.prepTime != null ? String(data.prepTime) : '');
-        setCalories(data.calories != null ? String(data.calories) : '');
-        setIngredients(
-          (data.ingredients || []).map((i: { name: string; quantity?: number; unit?: string; notes?: string }) => ({
-            name: i.name || '',
-            quantity: i.quantity != null ? String(i.quantity) : '',
-            unit: i.unit || '',
-            notes: i.notes || '',
-          }))
-        );
-        setInstructions(data.instructions || []);
-        setLoading(false);
-      } catch {
-        if (!cancelled) {
-          setError('Failed to load recipe');
-          setLoading(false);
-        }
-      }
+    const data = mockRecipes.find(r => r.id === id);
+    if (!data) {
+      setError('Recipe not found');
+      setLoading(false);
+      return;
     }
-
-    fetchRecipe();
-    return () => { cancelled = true; };
+    setTitle(data.title || '');
+    setDescription(data.description || '');
+    setImage(data.image || '');
+    setDiet(data.diet || '');
+    setPrepTime(data.prepTime != null ? String(data.prepTime) : '');
+    setCalories(data.calories != null ? String(data.calories) : '');
+    setIngredients(
+      (data.ingredients || []).map((i) => ({
+        name: i.name || '',
+        quantity: i.quantity != null ? String(i.quantity) : '',
+        unit: i.unit || '',
+        notes: i.notes || '',
+      }))
+    );
+    setInstructions(data.instructions || []);
+    setLoading(false);
   }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,18 +88,9 @@ export default function EditRecipePage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/recipes/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (res.ok || res.status === 204) {
-        router.push(`/recipes/${id}`);
-      } else {
-        const data = await res.json().catch(() => null);
-        setError(data?.message || `Failed to save (${res.status})`);
-      }
+      // Mock save — just redirect back
+      console.log('[mock] saving recipe', id, body);
+      router.push(`/recipes/${id}`);
     } catch {
       setError('Failed to save recipe');
     } finally {
@@ -479,10 +452,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '16px 24px',
-    backgroundColor: '#374151',
+    backgroundColor: 'var(--btn-secondary-bg)',
     border: 'none',
     borderRadius: 14,
-    color: 'white',
+    color: 'var(--btn-secondary-text)',
     fontSize: 16,
     fontWeight: 600,
     textDecoration: 'none',
@@ -491,10 +464,10 @@ const styles: { [key: string]: React.CSSProperties } = {
   saveBtn: {
     flex: 1,
     padding: '16px 24px',
-    backgroundColor: '#10b981',
+    backgroundColor: 'var(--btn-primary-bg)',
     border: 'none',
     borderRadius: 14,
-    color: 'white',
+    color: 'var(--btn-primary-text)',
     fontSize: 16,
     fontWeight: 600,
     cursor: 'pointer',

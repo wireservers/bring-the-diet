@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../lib/useAuth';
+import { ThemeToggle } from './ThemeToggle';
 
 const TABS: Array<{ label: string; href: string; icon: React.ReactNode }> = [
   {
@@ -129,8 +130,9 @@ export function TabNav() {
           })}
         </div>
 
-        {/* Desktop auth */}
+        {/* Desktop auth + theme toggle */}
         <div className="tn-auth-desktop" style={styles.authRow}>
+          <ThemeToggle />
           {isAuthenticated && user ? (
             <>
               <Link href="/profile" style={styles.profileBtn}>
@@ -188,10 +190,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     position: 'sticky',
     top: 0,
     zIndex: 50,
-    backgroundColor: 'rgba(17, 24, 39, 0.85)',
+    backgroundColor: 'var(--nav-bg)',
     backdropFilter: 'blur(12px)',
     WebkitBackdropFilter: 'blur(12px)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+    borderBottom: '1px solid var(--nav-border)',
   },
   topBar: {
     display: 'flex',

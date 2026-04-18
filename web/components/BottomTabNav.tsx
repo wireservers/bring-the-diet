@@ -34,36 +34,38 @@ export function BottomTabNav() {
   const pathname = usePathname();
 
   return (
-    <nav style={styles.nav}>
+    <>
       <style>{`
         .bottom-tab-nav { display: none; }
         @media (max-width: 768px) {
-          .bottom-tab-nav { display: flex !important; }
+          .bottom-tab-nav { display: block !important; }
         }
       `}</style>
-      <div className="bottom-tab-nav" style={styles.inner}>
-        {TABS.map((t) => {
-          const active = t.href === '/' ? pathname === '/' : pathname.startsWith(t.href);
-          return (
-            <Link
-              key={t.href}
-              href={t.href}
-              style={{
-                ...styles.tab,
-                color: active ? '#ef4444' : '#9ca3af',
-              }}
-            >
-              {t.icon(active)}
-              <span style={styles.tabLabel}>
-                {t.label.split('\n').map((line, i) => (
-                  <span key={i}>{line}{i === 0 && t.label.includes('\n') ? <br /> : null}</span>
-                ))}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+      <nav className="bottom-tab-nav" style={styles.nav}>
+        <div style={styles.inner}>
+          {TABS.map((t) => {
+            const active = t.href === '/' ? pathname === '/' : pathname.startsWith(t.href);
+            return (
+              <Link
+                key={t.href}
+                href={t.href}
+                style={{
+                  ...styles.tab,
+                  color: active ? '#ef4444' : '#9ca3af',
+                }}
+              >
+                {t.icon(active)}
+                <span style={styles.tabLabel}>
+                  {t.label.split('\n').map((line, i) => (
+                    <span key={i}>{line}{i === 0 && t.label.includes('\n') ? <br /> : null}</span>
+                  ))}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }
 
@@ -74,8 +76,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     left: 0,
     right: 0,
     zIndex: 50,
-    backgroundColor: '#111827',
-    borderTop: '1px solid #1f2937',
+    backgroundColor: 'var(--bottom-nav-bg)',
+    borderTop: '1px solid var(--bottom-nav-border)',
   },
   inner: {
     display: 'flex',

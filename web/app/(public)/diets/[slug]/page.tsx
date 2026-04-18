@@ -1,135 +1,135 @@
-import Link from 'next/link';
+import type { Metadata } from 'next';
+import { DietDetailContent } from './DietDetailContent';
+import { JsonLd } from '../../../../components/JsonLd';
+import {
+  SITE_NAME,
+  SITE_URL,
+  DEFAULT_OG_IMAGE,
+  absoluteUrl,
+} from '../../../../lib/seo';
 
-export default async function DietDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const dietName = slug
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.iconCircle}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="1.5">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-            <path d="M8 12l2 2 4-4" />
-          </svg>
-        </div>
-        <span style={styles.badge}>Coming Soon</span>
-        <h1 style={styles.title}>{dietName} Diet</h1>
-        <p style={styles.description}>
-          The full {dietName} diet page is under development. Soon you&apos;ll find a comprehensive guide
-          with allowed foods, recipes, meal plans, and scientific research for this diet type.
-        </p>
-        <div style={styles.featureList}>
-          <div style={styles.featureItem}>
-            <span style={styles.featureDot} />
-            Complete food list and guidelines
-          </div>
-          <div style={styles.featureItem}>
-            <span style={styles.featureDot} />
-            Filtered recipes for this diet
-          </div>
-          <div style={styles.featureItem}>
-            <span style={styles.featureDot} />
-            Sample meal plans and tips
-          </div>
-        </div>
-        <div style={styles.linkRow}>
-          <Link href="/diets" style={styles.backLink}>All Diets</Link>
-          <Link href="/" style={styles.backLink}>Home</Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    minHeight: 'calc(100vh - 100px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#111827',
-    margin: -16,
-    padding: 20,
+const DIET_META: Record<string, { title: string; description: string }> = {
+  keto: {
+    title: 'Ketogenic Diet',
+    description:
+      'Complete guide to the ketogenic diet - high-fat, low-carb eating plan for weight loss and energy.',
   },
-  card: {
-    maxWidth: 480,
-    width: '100%',
-    textAlign: 'center',
-    padding: '48px 32px',
-    backgroundColor: '#1f2937',
-    borderRadius: 24,
-    border: '1px solid #374151',
+  paleo: {
+    title: 'Paleo Diet',
+    description:
+      'Discover the Paleolithic diet - whole, unprocessed foods for improved gut health and natural weight management.',
   },
-  iconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: '50%',
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 20px',
+  vegan: {
+    title: 'Vegan Diet',
+    description:
+      'Explore the vegan diet - plant-based nutrition for better health and environmental sustainability.',
   },
-  badge: {
-    display: 'inline-block',
-    padding: '6px 16px',
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-    color: '#8b5cf6',
-    borderRadius: 20,
-    fontSize: 13,
-    fontWeight: 600,
-    marginBottom: 16,
+  vegetarian: {
+    title: 'Vegetarian Diet',
+    description:
+      'Guide to the vegetarian diet - plant-focused eating with dairy and eggs for balanced nutrition.',
   },
-  title: {
-    margin: '0 0 12px',
-    fontSize: 28,
-    fontWeight: 700,
-    color: 'white',
+  mediterranean: {
+    title: 'Mediterranean Diet',
+    description:
+      'The Mediterranean diet - heart-healthy eating with olive oil, fish, and fresh produce.',
   },
-  description: {
-    margin: '0 0 24px',
-    fontSize: 15,
-    lineHeight: 1.6,
-    color: '#9ca3af',
+  'low-carb': {
+    title: 'Low Carb Diet',
+    description:
+      'Low carb diet guide - reduce carbohydrates for effective weight management and stable energy.',
   },
-  featureList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-    marginBottom: 32,
-    textAlign: 'left',
+  'gluten-free': {
+    title: 'Gluten Free Diet',
+    description:
+      'Gluten-free diet guide - eliminate gluten for celiac disease relief and improved digestion.',
   },
-  featureItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    fontSize: 14,
-    color: '#d1d5db',
+  dash: {
+    title: 'DASH Diet',
+    description:
+      'DASH diet guide - dietary approach to stop hypertension with proven blood pressure benefits.',
   },
-  featureDot: {
-    width: 8,
-    height: 8,
-    borderRadius: '50%',
-    backgroundColor: '#8b5cf6',
-    flexShrink: 0,
+  'high-protein': {
+    title: 'High Protein Diet',
+    description:
+      'High protein diet guide - protein-rich eating for muscle growth and faster recovery.',
   },
-  linkRow: {
-    display: 'flex',
-    gap: 12,
-    justifyContent: 'center',
+  diabetic: {
+    title: 'Diabetic Diet',
+    description:
+      'Diabetic diet guide - blood sugar-friendly meals for effective diabetes management.',
   },
-  backLink: {
-    display: 'inline-block',
-    padding: '12px 32px',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    color: 'white',
-    borderRadius: 12,
-    textDecoration: 'none',
-    fontSize: 14,
-    fontWeight: 500,
+  'low-fodmap': {
+    title: 'Low FODMAP Diet',
+    description:
+      'Low FODMAP diet guide - clinically proven to reduce IBS symptoms and digestive distress.',
   },
 };
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const meta = DIET_META[slug];
+  const title =
+    meta?.title ||
+    slug
+      .split('-')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ') + ' Diet';
+  const description =
+    meta?.description ||
+    `Explore the ${title} - recipes, meal plans, and nutrition guidance on ${SITE_NAME}.`;
+  const url = absoluteUrl(`/diets/${slug}`);
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: 'article',
+      title: `${title} Guide`,
+      description,
+      url,
+      images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} Guide`,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    alternates: { canonical: url },
+  };
+}
+
+export default async function DietPage({ params }: PageProps) {
+  const { slug } = await params;
+  const meta = DIET_META[slug];
+  const title =
+    meta?.title ||
+    slug
+      .split('-')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ') + ' Diet';
+  const description = meta?.description || `Explore the ${title}.`;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: `${title} - Complete Guide`,
+    description,
+    publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+    mainEntityOfPage: absoluteUrl(`/diets/${slug}`),
+  };
+
+  return (
+    <>
+      <JsonLd data={jsonLd} />
+      <DietDetailContent slug={slug} />
+    </>
+  );
+}

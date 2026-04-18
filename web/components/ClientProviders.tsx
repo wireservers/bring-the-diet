@@ -1,13 +1,15 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { ReactNode } from 'react';
-
-const MsalAuthProvider = dynamic(
-  () => import('./MsalAuthProvider').then(m => ({ default: m.MsalAuthProvider })),
-  { ssr: false }
-);
+import { Provider } from 'react-redux';
+import { store } from '../lib/store';
+import { ThemeSync } from './ThemeSync';
 
 export function ClientProviders({ children }: { children: ReactNode }) {
-  return <MsalAuthProvider>{children}</MsalAuthProvider>;
+  return (
+    <Provider store={store}>
+      <ThemeSync />
+      {children}
+    </Provider>
+  );
 }

@@ -9,3 +9,6 @@ dist
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+pnpm-lock.yaml
+package-lock.json
+pnpm-workspace.yaml

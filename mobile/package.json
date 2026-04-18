@@ -1,5 +1,5 @@
 {
-  "name": "@nutri/mobile",
+  "name": "@bringthediet/mobile",
   "private": true,
   "version": "0.0.1",
   "main": "expo-router/entry",

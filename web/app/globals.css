@@ -1,8 +1,67 @@
-:root { color-scheme: light; }
-body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+:root,
+html.theme-light {
+  --page-bg: #f9fafb;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #9ca3af;
+  --input-bg: #f3f4f6;
+  --arrow-bg: rgba(0, 0, 0, 0.06);
+  --arrow-border: rgba(0, 0, 0, 0.12);
+  --arrow-hover: rgba(0, 0, 0, 0.12);
+  --arrow-color: #374151;
+  --nav-bg: rgba(255, 255, 255, 0.85);
+  --nav-border: rgba(0, 0, 0, 0.06);
+  --bottom-nav-bg: #ffffff;
+  --bottom-nav-border: #e5e7eb;
+  --badge-bg: #f3f4f6;
+  --badge-text: #374151;
+  --skeleton-bg: #e5e7eb;
+  --btn-primary-bg: #10b981;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #f3f4f6;
+  --btn-secondary-text: #374151;
+  color-scheme: light;
+}
+
+html.theme-dark {
+  --page-bg: #111827;
+  --card-bg: #1f2937;
+  --card-border: #374151;
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --input-bg: #1f2937;
+  --arrow-bg: rgba(255, 255, 255, 0.1);
+  --arrow-border: rgba(255, 255, 255, 0.2);
+  --arrow-hover: rgba(255, 255, 255, 0.2);
+  --arrow-color: #ffffff;
+  --nav-bg: rgba(17, 24, 39, 0.85);
+  --nav-border: rgba(255, 255, 255, 0.06);
+  --bottom-nav-bg: #111827;
+  --bottom-nav-border: #1f2937;
+  --badge-bg: #374151;
+  --badge-text: #d1d5db;
+  --skeleton-bg: #1f2937;
+  --btn-primary-bg: #10b981;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #374151;
+  --btn-secondary-text: #ffffff;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  background-color: var(--page-bg);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
 .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
-.card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
-.nav { display: flex; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #e5e7eb; padding: 12px 0; }
-.nav a { text-decoration: none; color: #111827; padding: 8px 10px; border-radius: 10px; }
+.card { border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; background-color: var(--card-bg); }
+.nav { display: flex; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--card-border); padding: 12px 0; }
+.nav a { text-decoration: none; color: var(--text-primary); padding: 8px 10px; border-radius: 10px; }
 .nav a.active { background: #111827; color: white; }
-.subtle { color: #6b7280; }
+.subtle { color: var(--text-muted); }

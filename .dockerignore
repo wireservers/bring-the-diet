@@ -1,0 +1,7 @@
+node_modules/
+web/node_modules/
+web/.next/
+mobile/
+.env
+!web/.env
+*.log

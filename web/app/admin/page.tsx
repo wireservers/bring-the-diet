@@ -1,4 +1,4 @@
-import { Shell } from '@nutri/ui';
+import { Shell } from '@bringthediet/ui';
 
 export default function Dashboard() {
   return (
