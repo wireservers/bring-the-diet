@@ -2,7 +2,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
 /**
  * Fetch wrapper that attaches a Bearer token for authenticated API calls.
- * Use for write operations (POST, PUT, DELETE) that require auth.
+ * Pair with `useAuth().getAccessToken` from `@wsws/auth/react`.
  */
 export async function fetchWithAuth(
   path: string,

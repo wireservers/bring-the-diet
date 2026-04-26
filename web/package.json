@@ -10,9 +10,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@azure/msal-browser": "^3.27.0",
+    "@azure/msal-react": "^2.2.0",
     "@bringthediet/shared": "workspace:*",
     "@bringthediet/ui": "workspace:*",
     "@reduxjs/toolkit": "^2.11.2",
+    "@wsws/auth": "file:./vendor/wsws-auth-0.1.0.tgz",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

@@ -1,40 +1,24 @@
 'use client';
 
-import { useCallback } from 'react';
+import { AuthContext, type AuthContextValue } from '@wsws/auth/react';
+import { useContext } from 'react';
+
+const MOCK: AuthContextValue = {
+  isAuthenticated: false,
+  user: null,
+  isLoading: false,
+  error: null,
+  login: async () => {
+    console.warn('[auth] mock-mode: login no-op (set NEXT_PUBLIC_AZURE_CLIENT_ID to enable)');
+  },
+  logout: async () => {},
+  getAccessToken: async () => null,
+};
 
 /**
- * Mock auth hook — returns a stub "dev user" so the app runs without MSAL / Azure AD.
- * Replace with the real MSAL-based hook when auth is wired up.
+ * Returns the real Entra-backed auth state when wrapped in <AuthProvider>;
+ * returns a mock object otherwise so the app renders without Entra configured.
  */
-interface AuthUser {
-  name: string;
-  email: string;
-}
-
-export function useAuth(): {
-  isAuthenticated: boolean;
-  user: AuthUser | null;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
-  getAccessToken: () => Promise<string | null>;
-} {
-  const login = useCallback(async () => {
-    console.log('[mock] login called — no-op');
-  }, []);
-
-  const logout = useCallback(async () => {
-    console.log('[mock] logout called — no-op');
-  }, []);
-
-  const getAccessToken = useCallback(async (): Promise<string | null> => {
-    return 'mock-dev-token';
-  }, []);
-
-  return {
-    isAuthenticated: false,
-    user: null,
-    login,
-    logout,
-    getAccessToken,
-  };
+export function useAuth(): AuthContextValue {
+  return useContext(AuthContext) ?? MOCK;
 }

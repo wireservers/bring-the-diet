@@ -40,6 +40,11 @@ jobs:
           cp -rL web/.next/standalone ./deploy
           cp -rL web/.next/static ./deploy/web/.next/static
           [ -d web/public ] && cp -rL web/public ./deploy/web/public || true
+          # Strip scripts/packageManager from the deployed root package.json so Azure
+          # Oryx doesn't try to run `npm run build` (which calls pnpm) on deploy.
+          if [ -f ./deploy/package.json ]; then
+            node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('./deploy/package.json','utf8')); delete p.scripts; delete p.packageManager; fs.writeFileSync('./deploy/package.json', JSON.stringify(p,null,2));"
+          fi
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v7

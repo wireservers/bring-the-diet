@@ -1,5 +1,7 @@
 'use client';
 
+import { useAuth } from '../../../lib/useAuth';
+
 const BENEFITS = [
   'Save unlimited recipes and meal plans',
   'Personalized nutrition recommendations',
@@ -8,9 +10,46 @@ const BENEFITS = [
 ];
 
 export default function ProfilePage() {
+  const { isAuthenticated, isLoading, user, login, logout, error } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.welcomeCard}>
+          <p style={styles.welcomeText}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated && user) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.welcomeCard}>
+          <div style={styles.avatarCircle}>
+            <span style={styles.avatarInitials}>{initials(user.name || user.email)}</span>
+          </div>
+          <h1 style={styles.welcomeTitle}>{user.name || 'Welcome'}</h1>
+          <p style={styles.welcomeText}>{user.email}</p>
+          <button type="button" onClick={logout} style={styles.signOutBtn}>
+            Sign out
+          </button>
+        </div>
+
+        <h2 style={styles.sectionHeading}>Account details</h2>
+        <div style={styles.detailsCard}>
+          <DetailRow label="User ID" value={user.id} mono />
+          <DetailRow label="Tenant ID" value={user.tenantId} mono />
+          <DetailRow label="Username" value={user.username} />
+          {user.roles.length > 0 && <DetailRow label="Roles" value={user.roles.join(', ')} />}
+          {user.groups.length > 0 && <DetailRow label="Groups" value={`${user.groups.length} groups`} />}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.page}>
-      {/* Welcome Card */}
       <div style={styles.welcomeCard}>
         <div style={styles.avatarCircle}>
           <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
@@ -22,44 +61,12 @@ export default function ProfilePage() {
         <p style={styles.welcomeText}>
           Sign in to save your favorite recipes, create meal plans, and track your nutrition journey
         </p>
+        <button type="button" onClick={login} style={styles.primaryBtn}>
+          Sign in with Microsoft
+        </button>
+        {error && <p style={styles.errorText}>{error.message}</p>}
       </div>
 
-      {/* Sign In Options */}
-      <h2 style={styles.sectionHeading}>Sign in with</h2>
-
-      <button type="button" style={styles.socialBtn}>
-        <div style={{ ...styles.socialIconCircle, backgroundColor: 'var(--card-bg)' }}>
-          <span style={{ color: '#ea4335', fontSize: 22, fontWeight: 700 }}>G</span>
-        </div>
-        <span style={styles.socialLabel}>Continue with Google</span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" style={styles.chevron}>
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      </button>
-
-      <button type="button" style={styles.socialBtn}>
-        <div style={{ ...styles.socialIconCircle, backgroundColor: '#1877f2' }}>
-          <span style={{ color: 'white', fontSize: 20, fontWeight: 700 }}>f</span>
-        </div>
-        <span style={styles.socialLabel}>Continue with Facebook</span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" style={styles.chevron}>
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      </button>
-
-      <button type="button" style={styles.socialBtn}>
-        <div style={{ ...styles.socialIconCircle, backgroundColor: '#d1d5db' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#1f2937">
-            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-          </svg>
-        </div>
-        <span style={styles.socialLabel}>Continue with Apple</span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" style={styles.chevron}>
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      </button>
-
-      {/* Benefits */}
       <div style={styles.benefitsCard}>
         <h3 style={styles.benefitsTitle}>Benefits of signing in:</h3>
         <div style={styles.benefitsList}>
@@ -77,6 +84,26 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+}
+
+function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div style={styles.detailRow}>
+      <span style={styles.detailLabel}>{label}</span>
+      <span style={{ ...styles.detailValue, ...(mono ? { fontFamily: 'monospace', fontSize: 12 } : {}) }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function initials(s: string): string {
+  return s
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join('');
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
@@ -103,6 +130,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: 'center',
     margin: '0 auto 20px',
   },
+  avatarInitials: {
+    fontSize: 32,
+    fontWeight: 700,
+    color: 'var(--text-primary)',
+  },
   welcomeTitle: {
     margin: '0 0 10px',
     fontSize: 28,
@@ -121,43 +153,65 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 700,
     color: 'var(--text-primary)',
   },
-  socialBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 14,
-    width: '100%',
-    padding: '16px 20px',
+  detailsCard: {
     backgroundColor: 'var(--card-bg)',
     borderRadius: 16,
     border: '1px solid var(--card-border)',
-    color: 'var(--text-primary)',
-    fontSize: 16,
-    fontWeight: 500,
-    cursor: 'pointer',
-    marginBottom: 12,
-    textAlign: 'left',
+    padding: '8px 20px',
+    marginBottom: 28,
   },
-  socialIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: '50%',
+  detailRow: {
     display: 'flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
+    padding: '14px 0',
+    borderBottom: '1px solid var(--card-border)',
+    gap: 12,
   },
-  socialLabel: {
-    flex: 1,
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: 500,
+    color: 'var(--text-muted)',
   },
-  chevron: {
-    flexShrink: 0,
+  detailValue: {
+    fontSize: 14,
+    color: 'var(--text-primary)',
+    textAlign: 'right',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  primaryBtn: {
+    marginTop: 20,
+    padding: '12px 24px',
+    borderRadius: 10,
+    border: 'none',
+    background: '#10b981',
+    color: 'white',
+    fontWeight: 600,
+    fontSize: 15,
+    cursor: 'pointer',
+  },
+  signOutBtn: {
+    marginTop: 20,
+    padding: '10px 20px',
+    borderRadius: 10,
+    border: '1px solid var(--card-border)',
+    background: 'none',
+    color: 'var(--text-muted)',
+    fontWeight: 500,
+    fontSize: 14,
+    cursor: 'pointer',
+  },
+  errorText: {
+    marginTop: 12,
+    fontSize: 13,
+    color: '#ef4444',
   },
   benefitsCard: {
     backgroundColor: 'var(--card-bg)',
     borderRadius: 16,
     border: '1px solid var(--card-border)',
     padding: '24px 20px',
-    marginTop: 20,
   },
   benefitsTitle: {
     margin: '0 0 16px',
