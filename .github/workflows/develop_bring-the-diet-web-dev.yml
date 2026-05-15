@@ -16,24 +16,41 @@ jobs:
       contents: read #This is required for actions/checkout
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.33.0
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
           node-version: '24.x'
+          cache: 'pnpm'
 
-      - name: npm install, build, and test
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Prepare standalone deployment
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+          cp -rL web/.next/standalone ./deploy
+          cp -rL web/.next/static ./deploy/web/.next/static
+          [ -d web/public ] && cp -rL web/public ./deploy/web/public || true
+          # Strip scripts/packageManager from the deployed root package.json so Azure
+          # Oryx doesn't try to run `npm run build` (which calls pnpm) on deploy.
+          if [ -f ./deploy/package.json ]; then
+            node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('./deploy/package.json','utf8')); delete p.scripts; delete p.packageManager; fs.writeFileSync('./deploy/package.json', JSON.stringify(p,null,2));"
+          fi
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: ./deploy
 
   deploy:
     runs-on: ubuntu-latest
@@ -47,7 +64,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -62,4 +79,4 @@ jobs:
           app-name: 'bring-the-diet-web-dev'
           slot-name: 'Production'
           package: .
-          
+          startup-command: 'node web/server.js'
