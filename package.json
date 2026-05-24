@@ -10,5 +10,8 @@
   },
   "dependencies": {
     "@wireservers-ui/react-natives": "^1.0.0-rc.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp", "unrs-resolver"]
   }
 }
