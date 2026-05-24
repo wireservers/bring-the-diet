@@ -17,6 +17,9 @@ importers:
       '@azure/identity':
         specifier: ^4.13.1
         version: 4.13.1
+      '@azure/msal-common':
+        specifier: ^15.0.0
+        version: 15.17.0
       '@azure/msal-node':
         specifier: ^3.7.3
         version: 3.8.10
