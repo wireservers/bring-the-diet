@@ -23,26 +23,30 @@ export default function ProfilePage() {
   }
 
   if (isAuthenticated && user) {
+    const displayName = user.name || user.email || 'You';
     return (
       <div style={styles.page}>
         <div style={styles.welcomeCard}>
           <div style={styles.avatarCircle}>
-            <span style={styles.avatarInitials}>{initials(user.name || user.email)}</span>
+            <span style={styles.avatarInitials}>{initials(displayName)}</span>
           </div>
           <h1 style={styles.welcomeTitle}>{user.name || 'Welcome'}</h1>
-          <p style={styles.welcomeText}>{user.email}</p>
-          <button type="button" onClick={logout} style={styles.signOutBtn}>
+          <p style={styles.welcomeText}>{user.email ?? ''}</p>
+          <button type="button" onClick={() => logout()} style={styles.signOutBtn}>
             Sign out
           </button>
         </div>
 
         <h2 style={styles.sectionHeading}>Account details</h2>
         <div style={styles.detailsCard}>
-          <DetailRow label="User ID" value={user.id} mono />
-          <DetailRow label="Tenant ID" value={user.tenantId} mono />
-          <DetailRow label="Username" value={user.username} />
-          {user.roles.length > 0 && <DetailRow label="Roles" value={user.roles.join(', ')} />}
-          {user.groups.length > 0 && <DetailRow label="Groups" value={`${user.groups.length} groups`} />}
+          {user.id && <DetailRow label="User ID" value={user.id} mono />}
+          {user.email && <DetailRow label="Email" value={user.email} />}
+          {user.roles.length > 0 && (
+            <DetailRow label="Roles" value={user.roles.map((r) => r.name).join(', ')} />
+          )}
+          {user.permissions.length > 0 && (
+            <DetailRow label="Permissions" value={`${user.permissions.length} permissions`} />
+          )}
         </div>
       </div>
     );
@@ -61,10 +65,10 @@ export default function ProfilePage() {
         <p style={styles.welcomeText}>
           Sign in to save your favorite recipes, create meal plans, and track your nutrition journey
         </p>
-        <button type="button" onClick={login} style={styles.primaryBtn}>
+        <button type="button" onClick={() => login()} style={styles.primaryBtn}>
           Sign in with Microsoft
         </button>
-        {error && <p style={styles.errorText}>{error.message}</p>}
+        {error && <p style={styles.errorText}>{error}</p>}
       </div>
 
       <div style={styles.benefitsCard}>

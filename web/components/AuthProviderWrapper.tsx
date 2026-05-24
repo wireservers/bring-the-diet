@@ -1,17 +1,13 @@
 'use client';
 
-import { AuthProvider } from '@wsws/auth/react';
 import type { ReactNode } from 'react';
-import { getAuthConfig } from '../lib/authConfig';
+import { AuthProvider } from '../lib/auth';
 
 /**
- * Renders the real Entra-backed AuthProvider when NEXT_PUBLIC_AZURE_CLIENT_ID is set,
- * otherwise renders children unwrapped (mock-mode). Letting `useAuth` throw in mock-mode
- * is intentional — pages that depend on auth should use the dedicated <AuthGuard> or
- * gate themselves on `process.env.NEXT_PUBLIC_AZURE_CLIENT_ID`.
+ * Wraps the app in the BTD AuthProvider — a thin client context that talks
+ * to the BTD API's /api/msal/session endpoint. The browser carries only an
+ * opaque session cookie; identity + permissions live server-side.
  */
 export function AuthProviderWrapper({ children }: { children: ReactNode }) {
-  const config = getAuthConfig();
-  if (!config) return <>{children}</>;
-  return <AuthProvider config={config}>{children}</AuthProvider>;
+  return <AuthProvider>{children}</AuthProvider>;
 }
