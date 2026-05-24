@@ -1,0 +1,83 @@
+name: Build and deploy Express API to Azure Web App - bring-the-diet-api
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/main_bring-the-diet-api.yml'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.28.0
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm --filter @bringthediet/api typecheck
+
+      - name: Build
+        run: pnpm --filter @bringthediet/api build
+
+      - name: Pack self-contained deploy bundle
+        run: pnpm --filter @bringthediet/api deploy --prod --legacy ./deploy
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: api
+          path: deploy
+          include-hidden-files: true
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: api
+          path: api
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_BRING_THE_DIET }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BRING_THE_DIET }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID_PROD }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'bring-the-diet-api'
+          slot-name: 'Production'
+          package: ./api
+          startup-command: 'node dist/index.js'
