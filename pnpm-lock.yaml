@@ -47,12 +47,18 @@ importers:
       ip-address:
         specifier: ^10.0.0
         version: 10.2.0
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.3
       mongoose:
         specifier: ^8.9.0
         version: 8.24.0
       multer:
         specifier: ^1.4.5-lts.1
         version: 1.4.5-lts.2
+      uuid:
+        specifier: ^11.0.0
+        version: 11.1.1
       zod:
         specifier: ^3.24.1
         version: 3.25.76
@@ -5709,6 +5715,10 @@ packages:
   utils-merge@1.0.1:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
+
+  uuid@11.1.1:
+    resolution: {integrity: sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ==}
+    hasBin: true
 
   uuid@7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
@@ -12553,6 +12563,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   utils-merge@1.0.1: {}
+
+  uuid@11.1.1: {}
 
   uuid@7.0.3: {}
 
