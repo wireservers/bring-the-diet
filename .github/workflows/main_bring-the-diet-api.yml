@@ -44,7 +44,7 @@ jobs:
         run: pnpm --filter @bringthediet/api build
 
       - name: Pack self-contained deploy bundle
-        run: pnpm --filter @bringthediet/api deploy --prod --legacy ./deploy
+        run: pnpm --filter @bringthediet/api deploy --prod --legacy --config.shamefully-hoist=true ./deploy
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
