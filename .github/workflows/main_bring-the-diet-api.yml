@@ -1,9 +1,7 @@
 name: Build and deploy Express API to Azure Web App - bring-the-diet-api
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
     paths:
       - 'api/**'
       - 'pnpm-lock.yaml'
