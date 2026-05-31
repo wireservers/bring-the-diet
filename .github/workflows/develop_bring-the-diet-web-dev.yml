@@ -1,12 +1,9 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: bring-the-diet
+name: Build and deploy Node.js app to Azure Web App - bring-the-diet-web-dev
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -21,7 +18,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
         with:
-          version: 10.33.0
+          version: 10.28.0
 
       - name: Set up Node.js version
         uses: actions/setup-node@v5
@@ -40,9 +37,14 @@ jobs:
           cp -rL web/.next/standalone ./deploy
           cp -rL web/.next/static ./deploy/web/.next/static
           [ -d web/public ] && cp -rL web/public ./deploy/web/public || true
+          # Strip scripts/packageManager from the deployed root package.json so Azure
+          # Oryx doesn't try to run `npm run build` (which calls pnpm) on deploy.
+          if [ -f ./deploy/package.json ]; then
+            node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('./deploy/package.json','utf8')); delete p.scripts; delete p.packageManager; fs.writeFileSync('./deploy/package.json', JSON.stringify(p,null,2));"
+          fi
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: node-app
           path: ./deploy
@@ -56,21 +58,22 @@ jobs:
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: node-app
 
       - name: Login to Azure
-        uses: azure/login@v3
+        uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A5389D17DEE04B388BD95ACC40BB94A5 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C068B3C0E6A9466F9A89413AA7EA3A0E }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F1E3135758484D3090B16D1753ABF965 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_BRING_THE_DIET }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BRING_THE_DIET }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID_DEV }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'bring-the-diet'
+          app-name: 'bring-the-diet-web-dev'
           slot-name: 'Production'
           package: .
+          startup-command: 'node web/server.js'

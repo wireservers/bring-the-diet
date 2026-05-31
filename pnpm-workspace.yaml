@@ -1,4 +1,9 @@
 packages:
   - 'web'
   - 'mobile'
+  - 'api'
   - 'packages/*'
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver
