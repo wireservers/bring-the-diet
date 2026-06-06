@@ -2,11 +2,6 @@ name: Build and deploy Express API to Azure Web App - bring-the-diet-api-dev
 
 on:
   workflow_dispatch:
-    paths:
-      - 'api/**'
-      - 'pnpm-lock.yaml'
-      - '.github/workflows/develop_bring-the-diet-api-dev.yml'
-  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
