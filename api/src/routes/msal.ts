@@ -18,7 +18,7 @@ const router = Router();
 router.get(
   "/login",
   asyncHandler(async (req, res) => {
-    const callbackUrl = (req.query.callbackUrl as string | undefined) ?? "/dashboard";
+    const callbackUrl = (req.query.callbackUrl as string | undefined) ?? "/";
     const { url, state, verifier } = await buildLoginUrl(callbackUrl);
     writeLoginCookies(res, state, verifier);
     res.redirect(url);
@@ -44,7 +44,7 @@ router.get(
       const { session, callbackUrl } = await createSessionFromCode(code, state, verifier);
       await writeMsalSession(res, session);
       clearLoginTempCookies(res);
-      const target = callbackUrl.startsWith("/") ? `${base}${callbackUrl}` : `${base}/dashboard`;
+      const target = callbackUrl.startsWith("/") ? `${base}${callbackUrl}` : `${base}/`;
       res.redirect(target);
     } catch (authError) {
       console.error("MSAL callback failed", authError);

@@ -65,8 +65,8 @@ function serializeAccount(account: AccountInfo) {
 }
 
 function normalizeCallbackUrl(value: string) {
-  if (!value || value.startsWith("http://") || value.startsWith("https://")) return "/dashboard";
-  return value.startsWith("/") ? value : "/dashboard";
+  if (!value || value.startsWith("http://") || value.startsWith("https://")) return "/";
+  return value.startsWith("/") ? value : "/";
 }
 
 function cookieKey() {
@@ -130,6 +130,7 @@ export async function buildLoginUrl(callbackUrl: string) {
     codeChallenge: challenge,
     codeChallengeMethod: "S256",
     state,
+    prompt: "login",
   };
   return { url: await msal.getAuthCodeUrl(request), state, verifier };
 }
