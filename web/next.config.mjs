@@ -11,7 +11,10 @@ const nextConfig = {
   // that the file tracer can't see in pnpm monorepos, so the standalone bundle
   // ships without styled-jsx and crashes on startup. Force it into the trace.
   outputFileTracingIncludes: {
-    '**/*': ['../node_modules/styled-jsx/**/*'],
+    '**/*': [
+      '../node_modules/styled-jsx/**/*',
+      '../node_modules/@swc/helpers/**/*',
+    ],
   },
   reactStrictMode: true,
   transpilePackages: ['@bringthediet/ui', '@bringthediet/shared'],

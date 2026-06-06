@@ -37,10 +37,12 @@ jobs:
           cp -rL web/.next/standalone ./deploy
           cp -rL web/.next/static ./deploy/web/.next/static
           [ -d web/public ] && cp -rL web/public ./deploy/web/public || true
-          # Next's require-hook dynamically resolves styled-jsx at runtime, which
-          # the output file tracer misses in pnpm monorepos. Copy it explicitly.
-          mkdir -p ./deploy/web/node_modules/styled-jsx
-          cp -rL node_modules/styled-jsx/. ./deploy/web/node_modules/styled-jsx/
+          # Next's require-hook dynamically resolves these at runtime, which
+          # the output file tracer misses in pnpm monorepos. Copy them explicitly.
+          for pkg in styled-jsx @swc/helpers; do
+            mkdir -p "./deploy/web/node_modules/$pkg"
+            cp -rL "node_modules/$pkg/." "./deploy/web/node_modules/$pkg/"
+          done
           # Strip scripts/packageManager from the deployed root package.json so Azure
           # Oryx doesn't try to run `npm run build` (which calls pnpm) on deploy.
           if [ -f ./deploy/package.json ]; then
