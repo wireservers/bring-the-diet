@@ -130,7 +130,10 @@ export async function buildLoginUrl(callbackUrl: string) {
     codeChallenge: challenge,
     codeChallengeMethod: "S256",
     state,
-    prompt: "login",
+    // No `prompt: "login"` — that would force the CIAM sign-in form even when
+    // the user already has an active tenant-level session from another
+    // BringThe app, breaking SSO across apps. Microsoft's tenant cookie is
+    // exactly the SSO carryover we want.
   };
   return { url: await msal.getAuthCodeUrl(request), state, verifier };
 }
